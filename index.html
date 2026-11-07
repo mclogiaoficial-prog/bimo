@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071b16">
+  <meta name="description" content="BIMO — Seu Agente de Negócios. Organize clientes, agenda, serviços e financeiro.">
+  <title>BIMO — Seu Agente de Negócios</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="toast" class="toast" role="status"></div>
+  <main id="authView" class="auth-shell">
+    <section class="auth-brand">
+      <div class="brand-mark">B</div>
+      <div class="brand-name">BIMO<span>.</span></div>
+      <p>Seu Agente de Negócios</p>
+      <h1>Seu trabalho merece uma gestão mais simples.</h1>
+      <p class="muted">Uma plataforma que se adapta à sua profissão para organizar clientes, serviços, agenda e dinheiro.</p>
+      <div class="feature-pills"><span>Clientes</span><span>Agenda</span><span>Financeiro</span><span>Ordens de serviço</span></div>
+    </section>
+    <section class="auth-card">
+      <div class="tabs">
+        <button class="tab active" data-auth-tab="login">Entrar</button>
+        <button class="tab" data-auth-tab="signup">Criar conta</button>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <h2>Bem-vindo de volta</h2>
+        <label>E-mail<input type="email" id="loginEmail" autocomplete="email" required placeholder="voce@email.com"></label>
+        <label>Senha<input type="password" id="loginPassword" autocomplete="current-password" required placeholder="Sua senha"></label>
+        <button class="btn primary full" type="submit">Entrar no BIMO</button>
+        <button class="link-btn" type="button" id="forgotPassword">Esqueci minha senha</button>
+      </form>
+      <form id="signupForm" class="auth-form hidden">
+        <h2>Crie sua conta</h2>
+        <label>Seu nome<input type="text" id="signupName" required maxlength="80" placeholder="Como podemos chamar você?"></label>
+        <label>E-mail<input type="email" id="signupEmail" autocomplete="email" required placeholder="voce@email.com"></label>
+        <label>Senha<input type="password" id="signupPassword" minlength="8" required placeholder="Mínimo de 8 caracteres"></label>
+        <label>Sua profissão<input type="text" id="signupProfession" required maxlength="80" placeholder="Ex.: Técnico de celulares"></label>
+        <button class="btn primary full" type="submit">Criar minha conta</button>
+        <p class="small muted">Ao criar sua conta, você concorda com os termos e a política de privacidade.</p>
+      </form>
+      <div id="authConfigNotice" class="notice warning">Configure o Supabase em <code>config.js</code> para ativar cadastro e login. A demonstração local funciona sem conta.</div>
+      <button id="demoButton" class="btn secondary full" type="button">Conhecer demonstração</button>
+    </section>
+  </main>
+
+  <div id="appView" class="app-layout hidden">
+    <aside class="sidebar" id="sidebar">
+      <a class="sidebar-brand" href="#"><span class="brand-mark small-mark">B</span><span>BIMO<span class="green">.</span></span></a>
+      <div class="profile-mini"><div class="avatar" id="avatarInitials">BM</div><div><strong id="sideUserName">Meu negócio</strong><small id="sideProfession">Profissional</small></div></div>
+      <nav class="nav">
+        <button class="nav-item active" data-page="overview">▦ <span>Visão geral</span></button>
+        <button class="nav-item" data-page="clients">♙ <span>Clientes</span></button>
+        <button class="nav-item" data-page="appointments">▣ <span>Agenda</span></button>
+        <button class="nav-item" data-page="services">◇ <span>Serviços</span></button>
+        <button class="nav-item" data-page="orders">⚒ <span>Ordens de serviço</span></button>
+        <button class="nav-item" data-page="finance">R$ <span>Financeiro</span></button>
+        <button class="nav-item" data-page="reports">▤ <span>Relatórios</span></button>
+        <button class="nav-item" data-page="settings">⚙ <span>Meu negócio</span></button>
+      </nav>
+      <div class="sidebar-bottom"><span class="plan-label">PLANO</span><strong id="planStatus">Demonstração</strong><button id="logoutButton" class="link-btn">Sair da conta</button></div>
+    </aside>
+
+    <section class="main-area">
+      <header class="topbar">
+        <button class="icon-btn mobile-menu" id="menuToggle" aria-label="Abrir menu">☰</button>
+        <div><span class="eyebrow" id="todayLabel">SEU PAINEL</span><h1 id="pageTitle">Visão geral</h1></div>
+        <div class="top-actions"><span class="connection-pill" id="connectionStatus">Modo demonstração</span><div class="avatar" id="topAvatar">BM</div></div>
+      </header>
+
+      <section id="page-overview" class="page active">
+        <div class="welcome-row"><div><h2>Olá, <span id="welcomeName">profissional</span> 👋</h2><p class="muted">Veja o que está acontecendo no seu negócio.</p></div><button class="btn primary" data-open-modal="client">+ Novo cliente</button></div>
+        <div class="stats-grid">
+          <article class="stat-card"><span>Clientes cadastrados</span><strong id="statClients">0</strong><small>Na sua base</small></article>
+          <article class="stat-card"><span>Agendamentos hoje</span><strong id="statAppointments">0</strong><small>Compromissos do dia</small></article>
+          <article class="stat-card"><span>Recebido neste mês</span><strong id="statIncome">R$ 0,00</strong><small>Pagamentos registrados</small></article>
+          <article class="stat-card alert-stat"><span>Em aberto há +30 dias</span><strong id="statOverdue">R$ 0,00</strong><small id="statOverdueCount">0 cobranças críticas</small></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel"><div class="panel-heading"><div><h3>Próximos compromissos</h3><p class="muted">Sua agenda mais próxima</p></div><button class="text-btn" data-goto="appointments">Ver agenda →</button></div><div id="upcomingList" class="empty-state">Nenhum compromisso cadastrado.</div></article>
+          <article class="panel"><div class="panel-heading"><div><h3>Atenção financeira</h3><p class="muted">Contas que precisam de acompanhamento</p></div><button class="text-btn" data-goto="finance">Ver financeiro →</button></div><div id="overdueList" class="empty-state">Nenhuma cobrança crítica.</div></article>
+        </div>
+        <div class="notice info"><strong>Um BIMO para sua profissão.</strong> Os módulos e campos podem ser ajustados conforme o tipo de trabalho informado no cadastro. Esta versão inicial traz a base comum e ferramentas de atendimento.</div>
+      </section>
+
+      <section id="page-clients" class="page">
+        <div class="section-toolbar"><div><h2>Clientes</h2><p class="muted">Cadastre pessoas e acompanhe o histórico.</p></div><button class="btn primary" data-open-modal="client">+ Novo cliente</button></div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Contato</th><th>Observações</th><th></th></tr></thead><tbody id="clientsTable"></tbody></table></div><div id="clientsEmpty" class="empty-state">Você ainda não cadastrou clientes.</div></div>
+      </section>
+
+      <section id="page-appointments" class="page">
+        <div class="section-toolbar"><div><h2>Agenda</h2><p class="muted">Organize atendimentos, visitas e compromissos.</p></div><button class="btn primary" data-open-modal="appointment">+ Agendar</button></div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Data e hora</th><th>Cliente</th><th>Serviço / assunto</th><th>Status</th><th></th></tr></thead><tbody id="appointmentsTable"></tbody></table></div><div id="appointmentsEmpty" class="empty-state">Nenhum agendamento cadastrado.</div></div>
+      </section>
+
+      <section id="page-services" class="page">
+        <div class="section-toolbar"><div><h2>Serviços e produtos</h2><p class="muted">Cadastre o que você oferece e seus preços.</p></div><button class="btn primary" data-open-modal="service">+ Novo item</button></div>
+        <div id="servicesGrid" class="cards-grid"></div><div id="servicesEmpty" class="empty-state">Cadastre seu primeiro serviço ou produto.</div>
+      </section>
+
+      <section id="page-orders" class="page">
+        <div class="section-toolbar"><div><h2>Ordens de serviço</h2><p class="muted">Registre trabalhos, defeitos, orçamentos e entregas. Útil para técnicos e prestadores.</p></div><button class="btn primary" data-open-modal="order">+ Nova ordem</button></div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Ordem</th><th>Cliente</th><th>Descrição</th><th>Prazo</th><th>Status</th></tr></thead><tbody id="ordersTable"></tbody></table></div><div id="ordersEmpty" class="empty-state">Nenhuma ordem de serviço cadastrada.</div></div>
+      </section>
+
+      <section id="page-finance" class="page">
+        <div class="section-toolbar"><div><h2>Financeiro</h2><p class="muted">Acompanhe recebimentos, despesas e valores em aberto.</p></div><button class="btn primary" data-open-modal="transaction">+ Lançamento</button></div>
+        <div class="stats-grid compact-stats"><article class="stat-card"><span>Recebido</span><strong id="financeIncome">R$ 0,00</strong></article><article class="stat-card"><span>Despesas</span><strong id="financeExpenses">R$ 0,00</strong></article><article class="stat-card"><span>A receber</span><strong id="financePending">R$ 0,00</strong></article></div>
+        <div class="panel"><div class="panel-heading"><div><h3>Contas e cobranças</h3><p class="muted">Atrasos acima de 30 dias aparecem como críticos.</p></div></div><div class="table-wrap"><table><thead><tr><th>Descrição</th><th>Cliente</th><th>Vencimento</th><th>Valor</th><th>Situação</th><th></th></tr></thead><tbody id="financeTable"></tbody></table></div><div id="financeEmpty" class="empty-state">Nenhum lançamento financeiro.</div></div>
+      </section>
+
+      <section id="page-reports" class="page">
+        <div class="section-toolbar"><div><h2>Relatórios</h2><p class="muted">Uma visão simples dos números registrados.</p></div></div>
+        <div class="stats-grid"><article class="stat-card"><span>Total de clientes</span><strong id="reportClients">0</strong></article><article class="stat-card"><span>Ordens concluídas</span><strong id="reportOrders">0</strong></article><article class="stat-card"><span>Receita registrada</span><strong id="reportIncome">R$ 0,00</strong></article><article class="stat-card"><span>Valores em atraso</span><strong id="reportDebt">R$ 0,00</strong></article></div>
+        <div class="panel"><h3>Resumo do negócio</h3><p class="muted" id="reportSummary">Adicione clientes, serviços e lançamentos para montar seus relatórios.</p></div>
+      </section>
+
+      <section id="page-settings" class="page">
+        <div class="section-toolbar"><div><h2>Meu negócio</h2><p class="muted">Ajuste as informações que personalizam seu BIMO.</p></div></div>
+        <div class="panel settings-panel"><form id="settingsForm" class="form-grid"><label>Nome do profissional / negócio<input id="settingsName" required maxlength="80"></label><label>Profissão<input id="settingsProfession" required maxlength="80"></label><label>Telefone<input id="settingsPhone" maxlength="30" placeholder="(00) 00000-0000"></label><label>E-mail de contato<input id="settingsContact" type="email" maxlength="120"></label><label class="wide">Descrição do negócio<textarea id="settingsDescription" rows="3" maxlength="300" placeholder="Conte brevemente o que você faz"></textarea></label><div class="wide"><button class="btn primary" type="submit">Salvar informações</button></div></form></div>
+        <div class="panel"><h3>Assinatura BIMO</h3><p class="muted">O status real da assinatura será conectado à Hotmart na etapa de integração. Não informe dados de cartão nesta tela.</p><div class="notice warning">Nesta versão, a área de assinatura é demonstrativa. O acesso automático exige configurar o produto e o webhook no servidor.</div></div>
+      </section>
+    </section>
+  </div>
+
+  <dialog id="itemDialog" class="modal"><form id="itemForm" method="dialog"><div class="modal-heading"><div><span class="eyebrow">BIMO</span><h2 id="modalTitle">Novo cadastro</h2></div><button type="button" class="icon-btn" id="closeModal">✕</button></div><div id="modalFields" class="form-grid"></div><div class="modal-actions"><button type="button" class="btn secondary" id="cancelModal">Cancelar</button><button type="submit" class="btn primary">Salvar</button></div></form></dialog>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
